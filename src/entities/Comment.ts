@@ -9,20 +9,20 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from 'typeorm';
-import { Comment } from './Comment';
+import { Post } from './Post';
 import { Updoot } from './Updoot';
 import { User } from './User';
 
 @ObjectType()
 @Entity()
-export class Post extends BaseEntity {
+export class Comment extends BaseEntity {
     @Field(() => Int)
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Field()
-    @Column()
-    title!: string;
+    @Field(() => String, { nullable: true })
+    @Column({ nullable: true })
+    title: string;
 
     @Field()
     @Column()
@@ -40,15 +40,26 @@ export class Post extends BaseEntity {
     creatorId: number;
 
     @Field()
-    @ManyToOne(() => User, user => user.posts)
+    @ManyToOne(() => User, user => user.comments)
     creator: User;
 
-    @OneToMany(() => Updoot, updoot => updoot.post)
-    updoots: Updoot[];
+    @Field(() => Int, { nullable: true })
+    @Column({ nullable: true })
+    targetUserId: number;
 
-    @Field(() => [Comment], { nullable: true })
-    @OneToMany(() => Comment, comment => comment.post)
-    comments: Comment[];
+    @Field()
+    @ManyToOne(() => User)
+    targetUser: User;
+
+    @Field(() => Int)
+    @Column()
+    postId: number;
+
+    @ManyToOne(() => Post, post => post.comments)
+    post: Post;
+
+    @OneToMany(() => Updoot, updoot => updoot.comment)
+    updoots: Updoot[];
 
     @Field(() => String)
     @CreateDateColumn()

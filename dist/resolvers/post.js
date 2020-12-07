@@ -28,6 +28,7 @@ const isAuth_1 = require("../middleware/isAuth");
 const typeorm_1 = require("typeorm");
 const Updoot_1 = require("../entities/Updoot");
 const User_1 = require("../entities/User");
+const Comment_1 = require("../entities/Comment");
 let PostInput = class PostInput {
 };
 __decorate([
@@ -60,6 +61,9 @@ let PostResolver = class PostResolver {
     }
     creator(post, { userLoader }) {
         return userLoader.load(post.creatorId);
+    }
+    comments(post) {
+        return Comment_1.Comment.find({ postId: post.id });
     }
     voteStatus(post, { updootLoader, req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -166,6 +170,13 @@ __decorate([
     __metadata("design:paramtypes", [Post_1.Post, Object]),
     __metadata("design:returntype", void 0)
 ], PostResolver.prototype, "creator", null);
+__decorate([
+    type_graphql_1.FieldResolver(() => [Comment_1.Comment], { nullable: true }),
+    __param(0, type_graphql_1.Root()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Post_1.Post]),
+    __metadata("design:returntype", void 0)
+], PostResolver.prototype, "comments", null);
 __decorate([
     type_graphql_1.FieldResolver(() => type_graphql_1.Int, { nullable: true }),
     __param(0, type_graphql_1.Root()),

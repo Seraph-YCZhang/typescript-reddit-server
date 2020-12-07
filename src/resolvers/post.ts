@@ -18,6 +18,7 @@ import { isAuth } from '../middleware/isAuth';
 import { getConnection } from 'typeorm';
 import { Updoot } from '../entities/Updoot';
 import { User } from '../entities/User';
+import { Comment } from '../entities/Comment';
 
 @InputType()
 class PostInput {
@@ -45,6 +46,11 @@ export class PostResolver {
     @FieldResolver(() => User)
     creator(@Root() post: Post, @Ctx() { userLoader }: MyContext) {
         return userLoader.load(post.creatorId);
+    }
+
+    @FieldResolver(() => [Comment], { nullable: true })
+    comments(@Root() post: Post) {
+        return Comment.find({ postId: post.id });
     }
 
     @FieldResolver(() => Int, { nullable: true })

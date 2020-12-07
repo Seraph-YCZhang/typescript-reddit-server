@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Updoot = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
+const Comment_1 = require("./Comment");
 const Post_1 = require("./Post");
 const User_1 = require("./User");
 let Updoot = class Updoot extends typeorm_1.BaseEntity {
@@ -43,8 +44,15 @@ __decorate([
     typeorm_1.ManyToOne(() => Post_1.Post, post => post.updoots, {
         onDelete: 'CASCADE'
     }),
-    __metadata("design:type", User_1.User)
+    __metadata("design:type", Post_1.Post)
 ], Updoot.prototype, "post", void 0);
+__decorate([
+    type_graphql_1.Field(() => Comment_1.Comment),
+    typeorm_1.ManyToOne(() => Comment_1.Comment, comment => comment.updoots, {
+        onDelete: 'CASCADE'
+    }),
+    __metadata("design:type", Comment_1.Comment)
+], Updoot.prototype, "comment", void 0);
 Updoot = __decorate([
     type_graphql_1.ObjectType(),
     typeorm_1.Entity()

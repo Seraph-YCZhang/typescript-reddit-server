@@ -8,6 +8,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from 'typeorm';
+import { Comment } from './Comment';
 import { Post } from './Post';
 import { Updoot } from './Updoot';
 @ObjectType()
@@ -30,6 +31,9 @@ export class User extends BaseEntity {
 
     @OneToMany(() => Post, post => post.creator)
     posts: Post[];
+
+    @OneToMany(() => Comment, comment => comment.creator)
+    comments: Comment[];
 
     @OneToMany(() => Updoot, updoot => updoot.user)
     updoots: Updoot[]

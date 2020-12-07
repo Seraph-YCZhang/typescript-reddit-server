@@ -9,70 +9,84 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Post = void 0;
+exports.Comment = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
-const Comment_1 = require("./Comment");
+const Post_1 = require("./Post");
 const Updoot_1 = require("./Updoot");
 const User_1 = require("./User");
-let Post = class Post extends typeorm_1.BaseEntity {
+let Comment = class Comment extends typeorm_1.BaseEntity {
 };
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.Int),
     typeorm_1.PrimaryGeneratedColumn(),
     __metadata("design:type", Number)
-], Post.prototype, "id", void 0);
+], Comment.prototype, "id", void 0);
+__decorate([
+    type_graphql_1.Field(() => String, { nullable: true }),
+    typeorm_1.Column({ nullable: true }),
+    __metadata("design:type", String)
+], Comment.prototype, "title", void 0);
 __decorate([
     type_graphql_1.Field(),
     typeorm_1.Column(),
     __metadata("design:type", String)
-], Post.prototype, "title", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    typeorm_1.Column(),
-    __metadata("design:type", String)
-], Post.prototype, "text", void 0);
+], Comment.prototype, "text", void 0);
 __decorate([
     type_graphql_1.Field(),
     typeorm_1.Column({ type: 'int', default: 0 }),
     __metadata("design:type", Number)
-], Post.prototype, "points", void 0);
+], Comment.prototype, "points", void 0);
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
     __metadata("design:type", Object)
-], Post.prototype, "voteStatus", void 0);
+], Comment.prototype, "voteStatus", void 0);
 __decorate([
     type_graphql_1.Field(),
     typeorm_1.Column(),
     __metadata("design:type", Number)
-], Post.prototype, "creatorId", void 0);
+], Comment.prototype, "creatorId", void 0);
 __decorate([
     type_graphql_1.Field(),
-    typeorm_1.ManyToOne(() => User_1.User, user => user.posts),
+    typeorm_1.ManyToOne(() => User_1.User, user => user.comments),
     __metadata("design:type", User_1.User)
-], Post.prototype, "creator", void 0);
+], Comment.prototype, "creator", void 0);
 __decorate([
-    typeorm_1.OneToMany(() => Updoot_1.Updoot, updoot => updoot.post),
-    __metadata("design:type", Array)
-], Post.prototype, "updoots", void 0);
+    type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
+    typeorm_1.Column({ nullable: true }),
+    __metadata("design:type", Number)
+], Comment.prototype, "targetUserId", void 0);
 __decorate([
-    type_graphql_1.Field(() => [Comment_1.Comment], { nullable: true }),
-    typeorm_1.OneToMany(() => Comment_1.Comment, comment => comment.post),
+    type_graphql_1.Field(),
+    typeorm_1.ManyToOne(() => User_1.User),
+    __metadata("design:type", User_1.User)
+], Comment.prototype, "targetUser", void 0);
+__decorate([
+    type_graphql_1.Field(() => type_graphql_1.Int),
+    typeorm_1.Column(),
+    __metadata("design:type", Number)
+], Comment.prototype, "postId", void 0);
+__decorate([
+    typeorm_1.ManyToOne(() => Post_1.Post, post => post.comments),
+    __metadata("design:type", Post_1.Post)
+], Comment.prototype, "post", void 0);
+__decorate([
+    typeorm_1.OneToMany(() => Updoot_1.Updoot, updoot => updoot.comment),
     __metadata("design:type", Array)
-], Post.prototype, "comments", void 0);
+], Comment.prototype, "updoots", void 0);
 __decorate([
     type_graphql_1.Field(() => String),
     typeorm_1.CreateDateColumn(),
     __metadata("design:type", Date)
-], Post.prototype, "createdAt", void 0);
+], Comment.prototype, "createdAt", void 0);
 __decorate([
     type_graphql_1.Field(() => String),
     typeorm_1.UpdateDateColumn(),
     __metadata("design:type", Date)
-], Post.prototype, "updatedAt", void 0);
-Post = __decorate([
+], Comment.prototype, "updatedAt", void 0);
+Comment = __decorate([
     type_graphql_1.ObjectType(),
     typeorm_1.Entity()
-], Post);
-exports.Post = Post;
-//# sourceMappingURL=Post.js.map
+], Comment);
+exports.Comment = Comment;
+//# sourceMappingURL=Comment.js.map

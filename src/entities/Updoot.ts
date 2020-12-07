@@ -9,6 +9,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from 'typeorm';
+import { Comment } from './Comment';
 import { Post } from './Post';
 import { User } from './User';
 
@@ -37,5 +38,11 @@ export class Updoot extends BaseEntity {
     @ManyToOne(() => Post, post => post.updoots, {
         onDelete: 'CASCADE'
     })
-    post: User;
+    post: Post;
+
+    @Field(() => Comment)
+    @ManyToOne(() => Comment, comment => comment.updoots, {
+        onDelete:'CASCADE'
+    })
+    comment: Comment;
 }
