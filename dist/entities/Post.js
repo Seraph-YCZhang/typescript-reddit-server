@@ -15,6 +15,7 @@ const typeorm_1 = require("typeorm");
 const Comment_1 = require("./Comment");
 const Updoot_1 = require("./Updoot");
 const User_1 = require("./User");
+const File_1 = require("./File");
 let Post = class Post extends typeorm_1.BaseEntity {
 };
 __decorate([
@@ -60,6 +61,11 @@ __decorate([
     typeorm_1.OneToMany(() => Comment_1.Comment, comment => comment.post),
     __metadata("design:type", Array)
 ], Post.prototype, "comments", void 0);
+__decorate([
+    type_graphql_1.Field(() => [File_1.File], { nullable: true }),
+    typeorm_1.OneToMany(() => File_1.File, file => file.post),
+    __metadata("design:type", Array)
+], Post.prototype, "files", void 0);
 __decorate([
     type_graphql_1.Field(() => String),
     typeorm_1.CreateDateColumn(),

@@ -19,8 +19,12 @@ import { createUserLoader } from './utils/createUserLoader';
 import { createUpdootLoader } from './utils/createUpdootLoader';
 import { Comment } from './entities/Comment';
 import { CommentResolver } from './resolvers/comment';
+import { File } from './entities/File';
+import { graphqlUploadExpress } from 'graphql-upload';
+import dotenv from 'dotenv';
 //re
 const main = async () => {
+    dotenv.config();
     const conn = await createConnection({
         type: 'postgres',
         database: 'reddit2',
@@ -29,11 +33,12 @@ const main = async () => {
         logging: true,
         synchronize: true,
         migrations: [path.join(__dirname, './migrations/*')],
-        entities: [Post, User, Updoot, Comment]
+        entities: [Post, User, Updoot, Comment, File]
     });
     await conn.runMigrations();
     // await Post.delete({})
     const app = express();
+    
     const RedisStore = connectRedis(session);
     const redis = new Redis();
     app.use(
@@ -42,6 +47,7 @@ const main = async () => {
             credentials: true
         })
     );
+    
     app.use(
         session({
             name: COOKIE_NAME,
@@ -57,9 +63,18 @@ const main = async () => {
             saveUninitialized: false
         })
     );
+    
     const apolloServer = new ApolloServer({
+        typeDefs: /* GraphQL */ `
+            scalar Upload
+        `,
         schema: await buildSchema({
-            resolvers: [HelloResolver, PostResolver, UserResolver, CommentResolver],
+            resolvers: [
+                HelloResolver,
+                PostResolver,
+                UserResolver,
+                CommentResolver
+            ],
             validate: false
         }),
         context: ({ req, res }) => ({
@@ -68,11 +83,14 @@ const main = async () => {
             redis,
             userLoader: createUserLoader(),
             updootLoader: createUpdootLoader()
-        })
+        }),
+        introspection:true,
+        uploads: false
     });
+    app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
     apolloServer.applyMiddleware({
         app,
-        cors: false
+        cors: false,
     });
     app.listen(4000, () => {
         console.log('server started on localhost:4000');

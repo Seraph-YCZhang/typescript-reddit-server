@@ -12,6 +12,7 @@ import {
 import { Comment } from './Comment';
 import { Updoot } from './Updoot';
 import { User } from './User';
+import { File } from './File';
 
 @ObjectType()
 @Entity()
@@ -49,6 +50,10 @@ export class Post extends BaseEntity {
     @Field(() => [Comment], { nullable: true })
     @OneToMany(() => Comment, comment => comment.post)
     comments: Comment[];
+
+    @Field(() => [File], { nullable: true })
+    @OneToMany(() => File, file => file.post)
+    files: File[];
 
     @Field(() => String)
     @CreateDateColumn()

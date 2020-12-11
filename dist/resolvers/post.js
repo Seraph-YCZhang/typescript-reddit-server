@@ -29,19 +29,9 @@ const typeorm_1 = require("typeorm");
 const Updoot_1 = require("../entities/Updoot");
 const User_1 = require("../entities/User");
 const Comment_1 = require("../entities/Comment");
-let PostInput = class PostInput {
-};
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], PostInput.prototype, "title", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], PostInput.prototype, "text", void 0);
-PostInput = __decorate([
-    type_graphql_1.InputType()
-], PostInput);
+const File_1 = require("../entities/File");
+const awsS3Uploader_1 = require("../utils/awsS3Uploader");
+const graphql_upload_1 = require("graphql-upload");
 let PaginatedPosts = class PaginatedPosts {
 };
 __decorate([
@@ -64,6 +54,9 @@ let PostResolver = class PostResolver {
     }
     comments(post) {
         return Comment_1.Comment.find({ postId: post.id });
+    }
+    files(post) {
+        return File_1.File.find({ postId: post.id });
     }
     voteStatus(post, { updootLoader, req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -105,7 +98,7 @@ let PostResolver = class PostResolver {
             return true;
         });
     }
-    posts(limit, cursor) {
+    posts(limit, filter, cursor) {
         return __awaiter(this, void 0, void 0, function* () {
             const realLimit = Math.min(50, limit) + 1;
             const realLimitPlusOne = realLimit + 1;
@@ -117,6 +110,11 @@ let PostResolver = class PostResolver {
             select p.*
             from post p 
             ${cursor ? `where p."createdAt" < $2` : ''}
+            ${filter
+                ? cursor
+                    ? `and (p.title like '%${filter}%' or p.text like '%${filter}%')`
+                    : `where p.title like '%${filter}%' or p.text like '%${filter}%'`
+                : ''}
             order by p."createdAt" DESC
             limit $1
         `, replacements);
@@ -129,9 +127,27 @@ let PostResolver = class PostResolver {
     post(id) {
         return Post_1.Post.findOne(id);
     }
-    createPost(input, { req }) {
+    createPost(text, title, file, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            return Post_1.Post.create(Object.assign(Object.assign({}, input), { creatorId: req.session.userId })).save();
+            let fileRet;
+            const post = yield Post_1.Post.create({
+                text,
+                title,
+                creatorId: req.session.userId
+            }).save();
+            if (file) {
+                const s3Uploader = new awsS3Uploader_1.AWSS3Uploader({
+                    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+                    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+                    destinationBucketName: process.env.AWS_BUCKET_NAME,
+                    region: 'us-east-2'
+                });
+                fileRet = yield s3Uploader.singleFileUpload.bind(s3Uploader)(file);
+                const fileObj = yield File_1.File.create(Object.assign({ postId: post.id }, fileRet)).save();
+                console.log(fileObj);
+            }
+            const retObject = Object.assign(Object.assign({}, post), fileRet);
+            return retObject;
         });
     }
     updatePost(id, title, text, { req }) {
@@ -178,6 +194,13 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PostResolver.prototype, "comments", null);
 __decorate([
+    type_graphql_1.FieldResolver(() => [File_1.File], { nullable: true }),
+    __param(0, type_graphql_1.Root()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Post_1.Post]),
+    __metadata("design:returntype", void 0)
+], PostResolver.prototype, "files", null);
+__decorate([
     type_graphql_1.FieldResolver(() => type_graphql_1.Int, { nullable: true }),
     __param(0, type_graphql_1.Root()),
     __param(1, type_graphql_1.Ctx()),
@@ -198,9 +221,10 @@ __decorate([
 __decorate([
     type_graphql_1.Query(() => PaginatedPosts),
     __param(0, type_graphql_1.Arg('limit', () => type_graphql_1.Int)),
-    __param(1, type_graphql_1.Arg('cursor', () => String, { nullable: true })),
+    __param(1, type_graphql_1.Arg('filter', () => String, { nullable: true })),
+    __param(2, type_graphql_1.Arg('cursor', () => String, { nullable: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:paramtypes", [Number, Object, Object]),
     __metadata("design:returntype", Promise)
 ], PostResolver.prototype, "posts", null);
 __decorate([
@@ -213,10 +237,12 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => Post_1.Post),
     type_graphql_1.UseMiddleware(isAuth_1.isAuth),
-    __param(0, type_graphql_1.Arg('input')),
-    __param(1, type_graphql_1.Ctx()),
+    __param(0, type_graphql_1.Arg('text', () => String)),
+    __param(1, type_graphql_1.Arg('title', () => String)),
+    __param(2, type_graphql_1.Arg('file', () => graphql_upload_1.GraphQLUpload, { nullable: true })),
+    __param(3, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [PostInput, Object]),
+    __metadata("design:paramtypes", [String, String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], PostResolver.prototype, "createPost", null);
 __decorate([
